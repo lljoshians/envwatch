@@ -14,6 +14,15 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+/**
+ * Cleans up a watcher and its associated temp file.
+ * Avoids repeating stop + unlink boilerplate in every test block.
+ */
+function cleanup(watcher, envPath) {
+  try { watcher.stop(); } catch (_) {}
+  try { fs.unlinkSync(envPath); } catch (_) {}
+}
+
 async function runTests() {
   let passed = 0;
   let failed = 0;
@@ -38,8 +47,7 @@ async function runTests() {
     watcher.on('ready', () => { readyFired = true; });
     watcher.start();
     assert(readyFired, 'emits ready event on start');
-    watcher.stop();
-    fs.unlinkSync(envPath);
+    cleanup(watcher, envPath);
   }
 
   // Test 2: emits error when file not found
@@ -62,8 +70,7 @@ async function runTests() {
     fs.writeFileSync(envPath, 'PORT=4000\nNODE_ENV=production', 'utf8');
     await sleep(600);
     assert(changeFired, 'emits change event when file is modified');
-    watcher.stop();
-    fs.unlinkSync(envPath);
+    cleanup(watcher, envPath);
   }
 
   // Test 4: stop clears watcher
