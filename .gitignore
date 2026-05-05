@@ -1,0 +1,10 @@
+node_modules/
+*.log
+yarn-error.log*
+.parcel-cache/
+.DS_Store
+Desktop.ini
+coverage/
+npm-debug.log*
+build/
+Thumbs.db
