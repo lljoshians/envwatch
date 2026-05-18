@@ -30,6 +30,8 @@ function deepEqual(a, b) {
 
 console.log('envGrouping tests');
 
+// --- splitKey ---
+
 test('splitKey with underscore separator', () => {
   deepEqual(splitKey('DB_HOST'), ['DB', 'HOST']);
 });
@@ -41,6 +43,12 @@ test('splitKey with no separator returns null prefix', () => {
 test('splitKey only splits on first occurrence', () => {
   deepEqual(splitKey('DB_PRIMARY_HOST'), ['DB', 'PRIMARY_HOST']);
 });
+
+test('splitKey with leading underscore returns null prefix', () => {
+  deepEqual(splitKey('_PRIVATE'), [null, '_PRIVATE']);
+});
+
+// --- groupEnv ---
 
 test('groupEnv groups by prefix', () => {
   const env = { DB_HOST: 'localhost', DB_PORT: '5432', APP_NAME: 'myapp' };
@@ -61,6 +69,8 @@ test('groupEnv with empty env returns empty object', () => {
   deepEqual(groupEnv({}), {});
 });
 
+// --- keysForGroup ---
+
 test('keysForGroup returns matching keys', () => {
   const env = { DB_HOST: 'x', DB_PORT: 'y', APP_NAME: 'z', PORT: '3000' };
   const keys = keysForGroup(env, 'DB').sort();
@@ -71,6 +81,14 @@ test('keysForGroup returns empty array when no match', () => {
   const env = { APP_NAME: 'test' };
   deepEqual(keysForGroup(env, 'DB'), []);
 });
+
+test('keysForGroup does not match partial prefix', () => {
+  const env = { DATABASE_URL: 'postgres://localhost', DB_HOST: 'localhost' };
+  const keys = keysForGroup(env, 'DB').sort();
+  deepEqual(keys, ['DB_HOST']);
+});
+
+// --- flattenGroups ---
 
 test('flattenGroups round-trips through groupEnv', () => {
   const env = { DB_HOST: 'localhost', DB_PORT: '5432', APP_NAME: 'myapp', PORT: '3000' };
