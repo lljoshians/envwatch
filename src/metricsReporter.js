@@ -12,6 +12,10 @@ const CYAN = '\x1b[36m';
 const YELLOW = '\x1b[33m';
 const GREEN = '\x1b[32m';
 
+/**
+ * Converts a millisecond duration into a human-readable string.
+ * e.g. 500 -> "500ms", 3500 -> "3.5s", 90000 -> "1m 30s"
+ */
 function fmtMs(ms) {
   if (ms < 1000) return `${ms}ms`;
   if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`;
@@ -20,6 +24,11 @@ function fmtMs(ms) {
   return `${m}m ${s}s`;
 }
 
+/**
+ * Prints a human-readable metrics summary to the console.
+ * @param {object} metrics - A Metrics instance with .summary() and .recentChanges() methods.
+ * @param {Logger} [logger] - Optional logger; defaults to a new Logger with prefix 'envwatch'.
+ */
 function printSummary(metrics, logger) {
   const log = logger || new Logger({ prefix: 'envwatch' });
   const s = metrics.summary();
@@ -45,8 +54,25 @@ function printSummary(metrics, logger) {
   }
 }
 
+/**
+ * Returns a pretty-printed JSON string of the metrics summary.
+ * @param {object} metrics - A Metrics instance with a .summary() method.
+ * @returns {string} JSON representation of the summary.
+ */
 function formatSummaryJson(metrics) {
   return JSON.stringify(metrics.summary(), null, 2);
 }
 
-module.exports = { printSummary, formatSummaryJson, fmtMs };
+/**
+ * Returns a single-line plain-text summary string, suitable for logging
+ * to external systems or writing to a status file.
+ * e.g. "uptime=1m 30s restarts=2 envChanges=5"
+ * @param {object} metrics - A Metrics instance with a .summary() method.
+ * @returns {string}
+ */
+function formatSummaryOneLine(metrics) {
+  const s = metrics.summary();
+  return `uptime=${fmtMs(s.uptimeMs)} restarts=${s.restarts} envChanges=${s.envChanges}`;
+}
+
+module.exports = { printSummary, formatSummaryJson, formatSummaryOneLine, fmtMs };
